@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "fetch": "node index.js"
+    "fetch": "node index.js",
+    "fetchnew": "node newApi.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "lodash": "^4.17.11",
     "node-fetch": "^2.1.2"
   }
 }
