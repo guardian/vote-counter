@@ -75,7 +75,17 @@ rl.question('Enter one or multiple division ids, separated by commas: \n', (answ
                 {party: 'Democratic Unionist Party', votes: ayeVoters.filter(d => d['Party'] === 'Democratic Unionist Party').length + ayeTellers.filter(d => d['Party'] === 'Democratic Unionist Party').length},
                 {party: 'Green Party', votes: ayeVoters.filter(d => d['Party'] === 'Green Party').length + ayeTellers.filter(d => d['Party'] === 'Green Party').length},
                 {party: 'Independent', votes: ayeVoters.filter(d => d['Party'] === 'Independent').length + ayeTellers.filter(d => d['Party'] === 'Independent').length}
-              ],
+              ].sort((a, b) => {
+                if (a.votes !== b.votes) {
+                  return b.votes - a.votes
+                } else {
+                  if (b.party > a.party) {
+                    return -1
+                  } else {
+                    return 1
+                  }
+                }
+              }),
               noesByParty: [
                 { party: 'Labour', votes: noVoters.filter(d => d['Party'] === 'Labour' || d['Party'] === 'Labour (Co-op)').length + noTellers.filter(d => d['Party'] === 'Labour').length},
                 {party: 'Conservative', votes: noVoters.filter(d => d['Party'] === 'Conservative').length + noTellers.filter(d => d['Party'] === 'Conservative').length},
@@ -86,7 +96,17 @@ rl.question('Enter one or multiple division ids, separated by commas: \n', (answ
                 {party: 'Democratic Unionist Party', votes: noVoters.filter(d => d['Party'] === 'Democratic Unionist Party').length + noTellers.filter(d => d['Party'] === 'Democratic Unionist Party').length},
                 {party: 'Green Party', votes: noVoters.filter(d => d['Party'] === 'Green Party').length + noTellers.filter(d => d['Party'] === 'Green Party').length},
                 {party: 'Independent', votes: noVoters.filter(d => d['Party'] === 'Independent').length + noTellers.filter(d => d['Party'] === 'Independent').length}
-              ]
+              ].sort((a, b) => {
+                if (a.votes !== b.votes) {
+                  return b.votes - a.votes
+                } else {
+                  if (b.party > a.party) {
+                    return -1
+                  } else {
+                    return 1
+                  }
+                }
+              })
             }
 
             final.divisionsInfo.push(divisionRecap);
