@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "fetch": "node index.js",
-    "fetchnew": "node newApi.js"
+    "fetchnew": "node newApi.js",
+    "fromdoc": "node fromDoc.js"
   },
   "author": "",
   "license": "ISC",
