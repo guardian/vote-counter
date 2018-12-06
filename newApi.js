@@ -56,11 +56,12 @@ rl.question('Enter one or multiple division ids, separated by commas: \n', (answ
             const noTellers = res['NoTellers'];
             const voteTitle = res['Title'];
             const divisionNumber = res['Number'];
+            const divisionId = res['DivisionId'];
 
             const divisionRecap = {
               title: voteTitle,
               number: divisionNumber,
-              id: res['DivisionId'],
+              id: divisionId,
               date: res['Date'],
               ayesCount: res['AyeCount'] + ayeTellers.length,
               noesCount: res['NoCount'] + noTellers.length,
@@ -135,6 +136,7 @@ rl.question('Enter one or multiple division ids, separated by commas: \n', (answ
               member.votes.push({
                 voteTitle,
                 divisionNumber,
+                divisionId,
                 vote,
                 teller: isTeller
               })
