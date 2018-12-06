@@ -3,6 +3,11 @@ const readline = require('readline');
 const fetch = require('node-fetch');
 const _ = require('lodash');
 
+// const final = {
+//   divisionsInfo: [],
+//   membersInfo: []
+// }
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -16,7 +21,8 @@ rl.question('Enter one or multiple division ids, separated by commas: \n', (answ
     rl.close();
   } else {
     console.log('Fetching division(s) info...');
-
+    
+    const glossesUrl = "https://interactive.guim.co.uk/docsdata-test/1TvMfmTvlemRxZ-OST9e7CyeSIul7ATmAew9FTVwYczU.json"
     const urls = divisions.map(division => `https://commonsvotes-services.digiminster.com/data/division/${division}.json`) //new api
     // get all members info. Uses the old api.
     fetch('http://data.parliament.uk/membersdataplatform/services/mnis/members/query/House=Commons%7CIsEligible=true/',
@@ -147,9 +153,41 @@ rl.question('Enter one or multiple division ids, separated by commas: \n', (answ
 
           return final;
 
-        }).then(final => {
-          fs.writeFileSync(`./votesNew.json`, JSON.stringify(final));
-        }).catch(e => console.log('Something went wrong fetching the data. Make sure you have entered valid divisions ids.'))
+        })
+        .then(final => {
+            let finalWithGlosses = final
+
+            fetch(glossesUrl)
+            .then(res => res.json())
+            .then(json => {
+              const glosses = json.sheets.Sheet1;
+              finalWithGlosses.divisionsInfo.map(d => {
+                var matchingGloss = glosses.find(g => g.divisionId == d.id);
+                if (matchingGloss != undefined && matchingGloss != "undefined") {
+                  d.glossText = matchingGloss.amendmentGloss;
+                  d.glossTitle = matchingGloss.amendmentTitle;
+                  d.isMainVote = matchingGloss.isFinalVote == 1 ? true : false;
+                }
+              });
+              finalWithGlosses.membersInfo.forEach(m => {
+                m.votes = m.votes.map(v => {
+                  var matchingGloss = glosses.find(g => g.divisionId == v.divisionId);
+                  if (matchingGloss != undefined && matchingGloss != "undefined") {
+                    v.glossText = matchingGloss.amendmentGloss;
+                    v.glossTitle = matchingGloss.amendmentTitle;
+                    v.isMainVote = matchingGloss.isFinalVote == 1 ? true : false;
+                  }
+                  return v;
+                })
+              })
+              return finalWithGlosses
+
+              }).then(toWrite => { console.log(toWrite.divisionsInfo.length, 'divisions fetched'); fs.writeFileSync(`./votesNew.json`, JSON.stringify(toWrite))})
+            .catch(e => console.log('Something went wrong fetching the data. Make sure you have entered valid divisions ids.'))
+        })
+        // .then(final => {
+        //   fs.writeFileSync(`./votesNew.json`, JSON.stringify(final));
+        // }).catch(e => console.log('Something went wrong fetching the data. Make sure you have entered valid divisions ids.'))
       })
 
     rl.close();
