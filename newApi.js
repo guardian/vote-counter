@@ -167,6 +167,7 @@ rl.question('Enter one or multiple division ids, separated by commas: \n', (answ
                   d.glossText = matchingGloss.amendmentGloss;
                   d.glossTitle = matchingGloss.amendmentTitle;
                   d.isMainVote = matchingGloss.isFinalVote == 1 ? true : false;
+                  d.ayeWithGvt = matchingGloss.ayeWithGvt === 1 ? true : false;
                 }
               });
               finalWithGlosses.membersInfo.forEach(m => {
