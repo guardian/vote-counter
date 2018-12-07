@@ -8,11 +8,13 @@ async function fetchAll() {
   
   const glosRes = await fetch(glossesUrl)
   const glossesJson = await glosRes.json()
-  const glosses = await glossesJson['sheets']['Sheet1']
+  const glosses = glossesJson['sheets']['Sheet1']
   const membersRes = await fetch(membersUrl, { method: 'GET', headers: { 'Content-Type': 'application/json' }}) 
   const membersText = await membersRes.text()
   const members = await JSON.parse(membersText.trim())
   const divisionIds = glosses.map(d => Number(d.divisionId))
+
+  console.log("our ids", divisionIds)
   
   const allMembers = members['Members']['Member'].map(member => {
     return {
@@ -28,18 +30,27 @@ async function fetchAll() {
   })
   
   const divisionUrls = divisionIds.map(id => `https://commonsvotes-services.digiminster.com/data/division/${id}.json`) //new api
-  const allDivisions = await Promise.all(divisionUrls.map(url => fetch(url).then(res => res.json())))
-  
+  const allDivisions = await Promise.all(divisionUrls.map(url => fetch(url, { timeout: 0 }).then(res => res.json())))
+
+  //console.log(allDivisions)
+
   const divisionsInfo = glosses.map(d => {
+
+    console.log("gloss id", d.divisionId)
+    console.log(allDivisions.filter(d => d).map(j => j.DivisionId))
+
+
     const glossText = d.amendmentGloss;
     const glossTitle = d.amendmentTitle;
     const isMainVote = d.isFinalVote == 1 ? true : false;
     const ayeWithGvt = d.ayeWithGvt === 1 ? true : false;
-    const matchingDivision = allDivisions.find(div => Number(div['DivisionId']) === Number(d.divisionId))
 
+    
+    const matchingDivision = allDivisions.find(div => Number(div['DivisionId']) === Number(d.divisionId))
     
 
     if (!matchingDivision) {
+      console.log('nomatch')
       return ({
         glossText,
         glossTitle,
@@ -168,7 +179,7 @@ async function fetchAll() {
     membersInfo: allMembers
   }
 
-  console.log('data for ' + allDivisions.length + ' divisions added')
+  console.log('data for ' + divisionsInfo.filter(d => d.hasData === true).length + ' divisions added')
   console.log(allMembers.length, 'members fetched')
 
   fs.writeFileSync(`./votesNew.json`, JSON.stringify(final))
