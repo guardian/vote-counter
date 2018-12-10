@@ -1,6 +1,20 @@
 const fs = require('fs');
 const fetch = require('node-fetch');
 const _ = require('lodash');
+const cond = require('lodash/cond')
+
+const shortNameFunc = cond([
+  [party => (party === "Labour" || party === "Labour (Co-op)"), () => "Lab"],
+  [party => party === "Conservative", () => "Con"],
+  [party => party === "Scottish National Party", () => "SNP"],
+  [party => party === "Sinn Féin", () => "SF"],
+  [party => party === "Liberal Democrat", () => "LD"],
+  [party => party === "Plaid Cymru", () => "PC"],
+  [party => party === "Independent", () => "Ind"],
+  [party => party === "Democratic Unionist Party", () => "DUP"],
+  [party => party === "Green Party", () => "Grn"],
+  [() => true, () => "Oth"]
+]);
 
 async function fetchAll() {
   const glossesUrl = "https://interactive.guim.co.uk/docsdata-test/1TvMfmTvlemRxZ-OST9e7CyeSIul7ATmAew9FTVwYczU.json"
@@ -21,7 +35,7 @@ async function fetchAll() {
       id: member['@Member_Id'],
       name: member['DisplayAs'],
       listAs: member['ListAs'],
-      party: member['Party']['#text'].startsWith('Labour') ? 'Labour' : member['Party']['#text'],
+      party: shortNameFunc(member['Party']['#text']),
       partyId: member['Party']['@Id'],
       constituency: member['MemberFrom'],
       gender: member.Gender,
@@ -81,15 +95,15 @@ async function fetchAll() {
         noesCount: matchingDivision['NoCount'] + noTellers.length,
         abstainCount: allMembers.length - ayeVoters.length - noVoters.length - ayeTellers.length - noTellers.length,
         ayesByParty: [
-          { party: 'Labour', votes: ayeVoters.filter(d => d['Party'] === 'Labour' || d['Party'] === 'Labour (Co-op)').length + ayeTellers.filter(d => d['Party'] === 'Labour').length },
-          { party: 'Conservative', votes: ayeVoters.filter(d => d['Party'] === 'Conservative').length + ayeTellers.filter(d => d['Party'] === 'Conservative').length },
-          { party: 'Scottish National Party', votes: ayeVoters.filter(d => d['Party'] === 'Scottish National Party').length + ayeTellers.filter(d => d['Party'] === 'Scottish National Party').length },
-          { party: 'Liberal Democrat', votes: ayeVoters.filter(d => d['Party'] === 'Liberal Democrat').length + ayeTellers.filter(d => d['Party'] === 'Liberal Democrat').length },
-          { party: 'Sinn Féin', votes: ayeVoters.filter(d => d['Party'] === 'Sinn Féin').length + ayeTellers.filter(d => d['Party'] === 'Sinn Féin').length },
-          { party: 'Plaid Cymru', votes: ayeVoters.filter(d => d['Party'] === 'Plaid Cymru').length + ayeTellers.filter(d => d['Party'] === 'Plaid Cymru').length },
-          { party: 'Democratic Unionist Party', votes: ayeVoters.filter(d => d['Party'] === 'Democratic Unionist Party').length + ayeTellers.filter(d => d['Party'] === 'Democratic Unionist Party').length },
-          { party: 'Green Party', votes: ayeVoters.filter(d => d['Party'] === 'Green Party').length + ayeTellers.filter(d => d['Party'] === 'Green Party').length },
-          { party: 'Independent', votes: ayeVoters.filter(d => d['Party'] === 'Independent').length + ayeTellers.filter(d => d['Party'] === 'Independent').length }
+          { party: shortNameFunc('Labour'), votes: ayeVoters.filter(d => d['Party'] === 'Labour' || d['Party'] === 'Labour (Co-op)').length + ayeTellers.filter(d => d['Party'] === 'Labour').length },
+          { party: shortNameFunc('Conservative'), votes: ayeVoters.filter(d => d['Party'] === 'Conservative').length + ayeTellers.filter(d => d['Party'] === 'Conservative').length },
+          { party: shortNameFunc('Scottish National Party'), votes: ayeVoters.filter(d => d['Party'] === 'Scottish National Party').length + ayeTellers.filter(d => d['Party'] === 'Scottish National Party').length },
+          { party: shortNameFunc('Liberal Democrat'), votes: ayeVoters.filter(d => d['Party'] === 'Liberal Democrat').length + ayeTellers.filter(d => d['Party'] === 'Liberal Democrat').length },
+          { party: shortNameFunc('Sinn Féin'), votes: ayeVoters.filter(d => d['Party'] === 'Sinn Féin').length + ayeTellers.filter(d => d['Party'] === 'Sinn Féin').length },
+          { party: shortNameFunc('Plaid Cymru'), votes: ayeVoters.filter(d => d['Party'] === 'Plaid Cymru').length + ayeTellers.filter(d => d['Party'] === 'Plaid Cymru').length },
+          { party: shortNameFunc('Democratic Unionist Party'), votes: ayeVoters.filter(d => d['Party'] === 'Democratic Unionist Party').length + ayeTellers.filter(d => d['Party'] === 'Democratic Unionist Party').length },
+          { party: shortNameFunc('Green Party'), votes: ayeVoters.filter(d => d['Party'] === 'Green Party').length + ayeTellers.filter(d => d['Party'] === 'Green Party').length },
+          { party: shortNameFunc('Independent'), votes: ayeVoters.filter(d => d['Party'] === 'Independent').length + ayeTellers.filter(d => d['Party'] === 'Independent').length }
         ].sort((a, b) => {
           if (a.votes !== b.votes) {
             return b.votes - a.votes
@@ -102,15 +116,15 @@ async function fetchAll() {
           }
         }),
         noesByParty: [
-          { party: 'Labour', votes: noVoters.filter(d => d['Party'] === 'Labour' || d['Party'] === 'Labour (Co-op)').length + noTellers.filter(d => d['Party'] === 'Labour').length },
-          { party: 'Conservative', votes: noVoters.filter(d => d['Party'] === 'Conservative').length + noTellers.filter(d => d['Party'] === 'Conservative').length },
-          { party: 'Scottish National Party', votes: noVoters.filter(d => d['Party'] === 'Scottish National Party').length + noTellers.filter(d => d['Party'] === 'Scottish National Party').length },
-          { party: 'Liberal Democrat', votes: noVoters.filter(d => d['Party'] === 'Liberal Democrat').length + noTellers.filter(d => d['Party'] === 'Liberal Democrat').length },
-          { party: 'Sinn Féin', votes: noVoters.filter(d => d['Party'] === 'Sinn Féin').length + noTellers.filter(d => d['Party'] === 'Sinn Féin').length },
-          { party: 'Plaid Cymru', votes: noVoters.filter(d => d['Party'] === 'Plaid Cymru').length + noTellers.filter(d => d['Party'] === 'Plaid Cymru').length },
-          { party: 'Democratic Unionist Party', votes: noVoters.filter(d => d['Party'] === 'Democratic Unionist Party').length + noTellers.filter(d => d['Party'] === 'Democratic Unionist Party').length },
-          { party: 'Green Party', votes: noVoters.filter(d => d['Party'] === 'Green Party').length + noTellers.filter(d => d['Party'] === 'Green Party').length },
-          { party: 'Independent', votes: noVoters.filter(d => d['Party'] === 'Independent').length + noTellers.filter(d => d['Party'] === 'Independent').length }
+          { party: shortNameFunc('Labour'), votes: noVoters.filter(d => d['Party'] === 'Labour' || d['Party'] === 'Labour (Co-op)').length + noTellers.filter(d => d['Party'] === 'Labour').length },
+          { party: shortNameFunc('Conservative'), votes: noVoters.filter(d => d['Party'] === 'Conservative').length + noTellers.filter(d => d['Party'] === 'Conservative').length },
+          { party: shortNameFunc('Scottish National Party'), votes: noVoters.filter(d => d['Party'] === 'Scottish National Party').length + noTellers.filter(d => d['Party'] === 'Scottish National Party').length },
+          { party: shortNameFunc('Liberal Democrat'), votes: noVoters.filter(d => d['Party'] === 'Liberal Democrat').length + noTellers.filter(d => d['Party'] === 'Liberal Democrat').length },
+          { party: shortNameFunc('Sinn Féin'), votes: noVoters.filter(d => d['Party'] === 'Sinn Féin').length + noTellers.filter(d => d['Party'] === 'Sinn Féin').length },
+          { party: shortNameFunc('Plaid Cymru'), votes: noVoters.filter(d => d['Party'] === 'Plaid Cymru').length + noTellers.filter(d => d['Party'] === 'Plaid Cymru').length },
+          { party: shortNameFunc('Democratic Unionist Party'), votes: noVoters.filter(d => d['Party'] === 'Democratic Unionist Party').length + noTellers.filter(d => d['Party'] === 'Democratic Unionist Party').length },
+          { party: shortNameFunc('Green Party'), votes: noVoters.filter(d => d['Party'] === 'Green Party').length + noTellers.filter(d => d['Party'] === 'Green Party').length },
+          { party: shortNameFunc('Independent'), votes: noVoters.filter(d => d['Party'] === 'Independent').length + noTellers.filter(d => d['Party'] === 'Independent').length }
         ].sort((a, b) => {
           if (a.votes !== b.votes) {
             return b.votes - a.votes
@@ -140,19 +154,19 @@ async function fetchAll() {
       let isTeller
 
       if (ayeVoters.find(voter => Number(member.id) === voter['MemberId'])) {
-        vote = 'AyeVote'
+        vote = 'For'
         isTeller = false
       } else if (noVoters.find(voter => Number(member.id) === voter['MemberId'])) {
-        vote = 'NoVote'
+        vote = 'Against'
         isTeller = false
       } else if (ayeTellers.find(voter => Number(member.id) === voter['MemberId'])) {
-        vote = 'AyeVote'
+        vote = 'For'
         isTeller = true
       } else if (noTellers.find(voter => Number(member.id) === voter['MemberId'])) {
-        vote = 'NoVote'
+        vote = 'Against'
         isTeller = true
       } else {
-        vote = 'A'
+        vote = 'Did not vote'
         isTeller = false
       }
       
